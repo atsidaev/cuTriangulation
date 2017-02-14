@@ -1,11 +1,13 @@
+#if 0
 #include <GL/glew.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
+#endif
 //#include <cutil_inline.h>
 #include <iomanip>
 #include <stdlib.h>
 #include <stdio.h>
-#include < math.h > 
+#include <math.h> 
 #include <malloc.h>
 #define SIZE 50
 typedef struct point 
@@ -140,10 +142,12 @@ __device__  __host__ bool isIntersect(Point ax,Point bx,Point cx,Point dx)
  }
   __host__ void drawLine(Point a,Point b)
  {
+#if 0
 	glBegin(GL_LINES);
 	glVertex2f(a.x,a.y);
 	glVertex2f(b.x,b.y);
 	glEnd();
+#endif
  }
  __device__ __host__ bool isPointInCircle(Point *points,Point point)
  {
@@ -824,7 +828,9 @@ void mainFunction(void)
 	cudaEventCreate(&stop);
 	cudaEventRecord(start,0);
 	
+#if 0
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+#endif
 	int size=SIZE;
 	float mas[SIZE][2]={{0.0,0.0},{-0.2,0.1},{0.32,-0.15},{0.17,-0.29},{-0.41,0.01},{-0.12,-0.2},{-0.48,-0.1},{0.54,0.29},{0.2,0.38},{-0.52,-0.09},
        {0.46,0.12},{0.49,-0.34},{-0.37,-0.02},{-0.09,0.05},{-0.22,0.2},{-0.55,-0.05},{0.02,-0.24},{0.3,-0.2},{-0.32,-0.04},{0.47,0.26},
@@ -923,7 +929,9 @@ for(int i=0;i<sizeL;i++)
 {
 	drawLine(lines[i].a,lines[i].b);
 }
+#if 0
     glutSwapBuffers();
+#endif
 	free(lines);
 	free(counts);
 	free(points);
@@ -934,7 +942,7 @@ for(int i=0;i<sizeL;i++)
 }
 int main(int argc, char **argv)
 {
-	
+#if 0
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100,100);
@@ -942,6 +950,8 @@ int main(int argc, char **argv)
 	glutCreateWindow("Triangulation");
 	glutDisplayFunc(mainFunction);
 	glutMainLoop();
-	
+#else
+	mainFunction();
+#endif
 	return 0;
 }
