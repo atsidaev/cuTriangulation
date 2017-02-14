@@ -10,10 +10,13 @@
 #include <math.h> 
 #include <malloc.h>
 #define SIZE 50
+
+#define REAL double
+
 typedef struct point 
 {
-    float x;
-    float y;
+    REAL x;
+    REAL y;
 } Point;
 
 typedef struct line 
@@ -66,11 +69,11 @@ __device__ __host__ void quickSort(Point *mas, int size,int sortType,int t)
 }
 __device__  __host__ bool isIntersect(Point ax,Point bx,Point cx,Point dx)
  {
-	float x1,x2,x3,x4;
-	float y1,y2,y3,y4;
-	float k1,k2;
-	float b1,b2;
-	float x,y;
+	REAL x1,x2,x3,x4;
+	REAL y1,y2,y3,y4;
+	REAL k1,k2;
+	REAL b1,b2;
+	REAL x,y;
 	x1=ax.x;
 	x2=bx.x;
 	y1=ax.y;
@@ -152,15 +155,15 @@ __device__  __host__ bool isIntersect(Point ax,Point bx,Point cx,Point dx)
  __device__ __host__ bool isPointInCircle(Point *points,Point point)
  {
 
-	 float a=points[0].y-points[1].y;
-	 float b=points[1].x-points[0].x;
-	 float c=points[2].x-points[0].x;
-	 float d=points[2].y-points[0].y;
+	 REAL a=points[0].y-points[1].y;
+	 REAL b=points[1].x-points[0].x;
+	 REAL c=points[2].x-points[0].x;
+	 REAL d=points[2].y-points[0].y;
 
-	 float x1,x2,x3;
-	 float y1,y2,y3;
-	 float cosin=((a*c+b*d)/(sqrt(a*a+b*b)*sqrt(c*c+d*d)));
-	 float s;
+	 REAL x1,x2,x3;
+	 REAL y1,y2,y3;
+	 REAL cosin=((a*c+b*d)/(sqrt(a*a+b*b)*sqrt(c*c+d*d)));
+	 REAL s;
 
 	 if(cosin>0)
 	 {
@@ -203,9 +206,9 @@ __device__  __host__ bool isIntersect(Point ax,Point bx,Point cx,Point dx)
  
  void connectWithFourthPoint(Point *points,Line *lines,int *sizeL)
  {
-	float minDistance=sqrt((points[0].x-points[3].x)*(points[0].x-points[3].x)+(points[0].y-points[3].y)*(points[0].y-points[3].y));
-	float distance1=sqrt((points[1].x-points[3].x)*(points[1].x-points[3].x)+(points[1].y-points[3].y)*(points[1].y-points[3].y));
-	float distance2=sqrt((points[2].x-points[3].x)*(points[2].x-points[3].x)+(points[2].y-points[3].y)*(points[2].y-points[3].y));
+	REAL minDistance=sqrt((points[0].x-points[3].x)*(points[0].x-points[3].x)+(points[0].y-points[3].y)*(points[0].y-points[3].y));
+	REAL distance1=sqrt((points[1].x-points[3].x)*(points[1].x-points[3].x)+(points[1].y-points[3].y)*(points[1].y-points[3].y));
+	REAL distance2=sqrt((points[2].x-points[3].x)*(points[2].x-points[3].x)+(points[2].y-points[3].y)*(points[2].y-points[3].y));
 	if(distance1<minDistance)
 	{
 		if(isIntersect(points[3],points[1],points[2],points[0])==false)
@@ -263,17 +266,17 @@ __device__  __host__ bool isIntersect(Point ax,Point bx,Point cx,Point dx)
 	return true;
   }
  
-  __device__  float getAngle(Point Ax,Point Bx,Point Cx)
+  __device__  REAL getAngle(Point Ax,Point Bx,Point Cx)
 	{
-		 float a=Ax.y-Bx.y;
-		 float b=Ax.x-Bx.x;
-		 float c=Cx.x-Bx.x;
-		 float d=Cx.y-Bx.y;
+		 REAL a=Ax.y-Bx.y;
+		 REAL b=Ax.x-Bx.x;
+		 REAL c=Cx.x-Bx.x;
+		 REAL d=Cx.y-Bx.y;
 		 if(sqrt(a*a+b*b)*sqrt(c*c+d*d)!=0)
 		 return acos((a*d+b*c)/(sqrt(a*a+b*b)*sqrt(c*c+d*d)))*(180/3.14);
 		 return 0.0;
 	}
-	__device__ void findBorderLine(int start1,int start2,int end1,int end2,short c,short dir,Point *mas1,Point *mas2,Point *SearchPoint1,Point *SearchPoint2,float Y1,float Y2)
+	__device__ void findBorderLine(int start1,int start2,int end1,int end2,short c,short dir,Point *mas1,Point *mas2,Point *SearchPoint1,Point *SearchPoint2,REAL Y1, REAL Y2)
 {
 	for(int i=start1;c*i<=c*end1;i+=c)
 	{
@@ -317,8 +320,8 @@ __device__ void buildTriangulation(Point *a,Point *b,int *sizeB,int *sizeA,Point
 	 if((*newA).x!=downLine.a.x||(*newA).y!=downLine.a.y||(*newB).x!=downLine.b.x||(*newB).y!=downLine.b.y)
 	 { 
 		bool BA=false,AB=false;
-		float min1=180.0;
-		float min2=180.0;
+		REAL min1=180.0;
+		REAL min2=180.0;
 	
 		Point points[3];
 		points[0]=(*newA);
@@ -362,8 +365,8 @@ __device__ void buildTriangulation(Point *a,Point *b,int *sizeB,int *sizeA,Point
 			if(AB&&BA)
 			{
 				
-				float alfa1=getAngle( (*newB), (*newA), a[(*sizeA)-1]);
-				float alfa2=getAngle( (*newA), (*newB), b[(*sizeB)-1]);
+				REAL alfa1=getAngle( (*newB), (*newA), a[(*sizeA)-1]);
+				REAL alfa2=getAngle( (*newA), (*newB), b[(*sizeB)-1]);
 				 min1=alfa1;
 				 min2=alfa2;
 				if(alfa1<180.0&&alfa2<180.0)
@@ -832,7 +835,7 @@ void mainFunction(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 	int size=SIZE;
-	float mas[SIZE][2]={{0.0,0.0},{-0.2,0.1},{0.32,-0.15},{0.17,-0.29},{-0.41,0.01},{-0.12,-0.2},{-0.48,-0.1},{0.54,0.29},{0.2,0.38},{-0.52,-0.09},
+	REAL mas[SIZE][2]={{0.0,0.0},{-0.2,0.1},{0.32,-0.15},{0.17,-0.29},{-0.41,0.01},{-0.12,-0.2},{-0.48,-0.1},{0.54,0.29},{0.2,0.38},{-0.52,-0.09},
        {0.46,0.12},{0.49,-0.34},{-0.37,-0.02},{-0.09,0.05},{-0.22,0.2},{-0.55,-0.05},{0.02,-0.24},{0.3,-0.2},{-0.32,-0.04},{0.47,0.26},
        {-0.03,0.25},{-0.1,0.2},{0.16,0.4},{-0.16,0.15},{-0.55,0.15},{0.54,-0.01},{-0.28,-0.19},{0.28,-0.26},{0.48,0.02},{-0.46,0.01},
        {0.31,-0.06},{0.1,-0.21},{-0.41,-0.34},{0.0,-0.08},{0.21,-0.22},{-0.17,0.11},{-0.37,0.23},{-0.48,0.16},{0.45,0.38},{-0.39,0.32},
