@@ -1,4 +1,6 @@
-#if 0
+//#define GL
+
+#ifdef GL
 #include <GL/glew.h>
 #include <GL/glu.h>
 #include <GL/glut.h>
@@ -11,7 +13,10 @@
 #include <malloc.h>
 #define SIZE 50
 
-#define REAL double
+#include <stdio.h>
+#include <vector>
+
+#define REAL float
 
 typedef struct point 
 {
@@ -145,11 +150,15 @@ __device__  __host__ bool isIntersect(Point ax,Point bx,Point cx,Point dx)
  }
   __host__ void drawLine(Point a,Point b)
  {
-#if 0
+#ifdef GL
 	glBegin(GL_LINES);
 	glVertex2f(a.x,a.y);
 	glVertex2f(b.x,b.y);
 	glEnd();
+#else
+	printf("2,0\n");
+	printf("%lf,%lf\n");
+	printf("%lf,%lf\n");
 #endif
  }
  __device__ __host__ bool isPointInCircle(Point *points,Point point)
@@ -831,15 +840,33 @@ void mainFunction(void)
 	cudaEventCreate(&stop);
 	cudaEventRecord(start,0);
 	
-#if 0
+#ifdef GL
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
-	int size=SIZE;
+	FILE* f = fopen("data1.dat", "r");
+
+	std::vector<Point> data;
+
+	int r = 0;
+	double v;
+	while (r != EOF)
+	{
+		Point* p = new Point();
+		r = fscanf(f, "%lf %lf %lf", &p->x, &p->y, &v);
+		data.push_back(*p);
+	}	
+
+	int size = data.size();
+
+	printf("%d elements were read\n", size);
+
+/*	int size=SIZE;
 	REAL mas[SIZE][2]={{0.0,0.0},{-0.2,0.1},{0.32,-0.15},{0.17,-0.29},{-0.41,0.01},{-0.12,-0.2},{-0.48,-0.1},{0.54,0.29},{0.2,0.38},{-0.52,-0.09},
        {0.46,0.12},{0.49,-0.34},{-0.37,-0.02},{-0.09,0.05},{-0.22,0.2},{-0.55,-0.05},{0.02,-0.24},{0.3,-0.2},{-0.32,-0.04},{0.47,0.26},
        {-0.03,0.25},{-0.1,0.2},{0.16,0.4},{-0.16,0.15},{-0.55,0.15},{0.54,-0.01},{-0.28,-0.19},{0.28,-0.26},{0.48,0.02},{-0.46,0.01},
        {0.31,-0.06},{0.1,-0.21},{-0.41,-0.34},{0.0,-0.08},{0.21,-0.22},{-0.17,0.11},{-0.37,0.23},{-0.48,0.16},{0.45,0.38},{-0.39,0.32},
-       {0.03,0.12},{0.29,0.24},{-0.36,0.41},{-0.54,0.19},{0.27,0.33},{-0.46,-0.33},{-0.11,-0.23},{-0.41,0.23},{-0.395,0.04},{0.34,0.15}};
+       {0.03,0.12},{0.29,0.24},{-0.36,0.41},{-0.54,0.19},{0.27,0.33},{-0.46,-0.33},{-0.11,-0.23},{-0.41,0.23},{-0.395,0.04},{0.34,0.15}};*/
+
 	Point *points;
 	Line *lines= (Line *) malloc(4*size*sizeof(Line));
 	int *counts=(int *) malloc((size/3+2)*sizeof(int));
@@ -847,15 +874,12 @@ void mainFunction(void)
 	int *linesSum=(int *) malloc((size/3+2)*sizeof(int));
 	int sizeL=0;
 	int sizeC=0;
-	points= (Point *) malloc(size*sizeof(Point));
-	 int *sizeLs= (int *) malloc((size/3+2)*sizeof(int));
+	points = data.data();
 
-	  for (int i = 0; i < size; ++i)
-	  {
-		 points[i].x = mas[i][0];
-		 points[i].y=mas[i][1];
-	  }
-	  quickSort(points, size-1,0,0);
+	int *sizeLs= (int *) malloc((size/3+2)*sizeof(int));
+	
+	quickSort(points, size-1,0,0);
+	printf("Point 0: %f, %f", points[0].x, points[0].y);
 	
 	divideIntoTriangles(size, points,lines,&sizeL,counts,&sizeC,sizeLs);
 	if(size>4)
@@ -932,12 +956,12 @@ for(int i=0;i<sizeL;i++)
 {
 	drawLine(lines[i].a,lines[i].b);
 }
-#if 0
+#ifdef GL
     glutSwapBuffers();
 #endif
 	free(lines);
 	free(counts);
-	free(points);
+//	free(points);
 	free(countsSum);
 	free(linesSum);
 	free(sizeLs);
@@ -945,7 +969,7 @@ for(int i=0;i<sizeL;i++)
 }
 int main(int argc, char **argv)
 {
-#if 0
+#ifdef GL
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100,100);
