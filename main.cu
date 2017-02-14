@@ -33,6 +33,9 @@ __device__ __host__ void quickSort(Point *mas, int size,int sortType,int t)
 {
 	int i = 1;
     int j = 2;
+
+	printf("Point 19: %f,%f\n", mas[19].x, mas[19].y);
+	printf("Total count: %d\n", size);
 	
 	while (i<size+1)
 	{
@@ -852,7 +855,7 @@ void mainFunction(void)
 	while (r != EOF)
 	{
 		Point* p = new Point();
-		r = fscanf(f, "%lf %lf %lf", &p->x, &p->y, &v);
+		r = fscanf(f, "%f %f %f", &p->x, &p->y, &v);
 		data.push_back(*p);
 	}	
 
@@ -867,14 +870,14 @@ void mainFunction(void)
        {0.31,-0.06},{0.1,-0.21},{-0.41,-0.34},{0.0,-0.08},{0.21,-0.22},{-0.17,0.11},{-0.37,0.23},{-0.48,0.16},{0.45,0.38},{-0.39,0.32},
        {0.03,0.12},{0.29,0.24},{-0.36,0.41},{-0.54,0.19},{0.27,0.33},{-0.46,-0.33},{-0.11,-0.23},{-0.41,0.23},{-0.395,0.04},{0.34,0.15}};*/
 
-	Point *points;
 	Line *lines= (Line *) malloc(4*size*sizeof(Line));
 	int *counts=(int *) malloc((size/3+2)*sizeof(int));
 	int *countsSum=(int *) malloc((size/3+2)*sizeof(int));
 	int *linesSum=(int *) malloc((size/3+2)*sizeof(int));
 	int sizeL=0;
 	int sizeC=0;
-	points = data.data();
+	Point points[data.size()];
+	memcpy(&points, data.data(), sizeof(Point) * data.size());
 
 	int *sizeLs= (int *) malloc((size/3+2)*sizeof(int));
 	
