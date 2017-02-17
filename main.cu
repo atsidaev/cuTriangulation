@@ -11,12 +11,13 @@
 #include <stdio.h>
 #include <math.h> 
 #include <malloc.h>
-#define SIZE 50
 
 #include <stdio.h>
 #include <vector>
 
 #define REAL float
+
+#define MAGIC_CONSTANT(x) (x/6+2)
 
 typedef struct point 
 {
@@ -160,8 +161,8 @@ __device__  __host__ bool isIntersect(Point ax,Point bx,Point cx,Point dx)
 	glEnd();
 #else
 	printf("2,0\n");
-	printf("%lf,%lf\n");
-	printf("%lf,%lf\n");
+	printf("%f,%f\n", a.x, a.y);
+	printf("%f,%f\n", b.x, b.y);
 #endif
  }
  __device__ __host__ bool isPointInCircle(Point *points,Point point)
@@ -634,26 +635,26 @@ __device__ void makePolygonConvex(Point *a,Point *b,int *sizeA,int*sizeB,Line *n
 	}
  }
 
-
-__global__ void connectTwoTriangulations(Point *points,int *counts,int sizeC,Line *lines,int *sizeL,int *countsSum,int *sizeLs,int *linesSum)
+__global__ void connectTwoTriangulations(Point *points,int *counts,int sizeC,Line *lines,int *sizeL,int *countsSum,int *sizeLs,int *linesSum, int input_points_count)
  {
 	 int index=2*threadIdx.x;
 	 int idx=threadIdx.x;
 	 int sizeA=0;
 		 int sizeB=0;
-	
-	
-		__shared__ int cashe[SIZE/6+2];
+
+		 extern __shared__ int cashe[];
+
 		if(index+1<sizeC)
 		{ 
 			 sizeA=counts[index];
 			 sizeB=counts[index+1];
 		}
-		 Line newLines[SIZE];
+
+		Line* newLines = new Line[SIZE];
 		int sizeNL=0;
-		Point a[SIZE];
-		Point b[SIZE]; 
-		Line ls[4*SIZE];
+		Point* a = new Point[SIZE];
+		Point* b = new Point[SIZE];
+		Line* ls = new Line[4*SIZE];
 
 		int end=sizeA;
 		if(sizeB>sizeA&&sizeB>sizeLs[idx])
@@ -726,6 +727,11 @@ __global__ void connectTwoTriangulations(Point *points,int *counts,int sizeC,Lin
 			sizeLs[blockDim.x]=0;
 			counts[blockDim.x]=0;
 		}
+
+		delete newLines;
+		delete a;
+		delete b;
+		delete ls;
  } 
 void divideIntoTriangles(int n,Point *points,Line *lines,int *sizeL,int *counts,int *sizeC,int *sizeLs);
  void splitPoints(int size1,int size2,Point *points,Line *lines,int *sizeL,int *counts,int *sizeC,int *sizeLs)
@@ -851,11 +857,14 @@ void mainFunction(void)
 	std::vector<Point> data;
 
 	int r = 0;
-	double v;
-	while (r != EOF)
+	REAL v;
+	while (true)
 	{
 		Point* p = new Point();
 		r = fscanf(f, "%f %f %f", &p->x, &p->y, &v);
+		if (r == EOF)
+			break;
+
 		data.push_back(*p);
 	}	
 
@@ -870,19 +879,24 @@ void mainFunction(void)
        {0.31,-0.06},{0.1,-0.21},{-0.41,-0.34},{0.0,-0.08},{0.21,-0.22},{-0.17,0.11},{-0.37,0.23},{-0.48,0.16},{0.45,0.38},{-0.39,0.32},
        {0.03,0.12},{0.29,0.24},{-0.36,0.41},{-0.54,0.19},{0.27,0.33},{-0.46,-0.33},{-0.11,-0.23},{-0.41,0.23},{-0.395,0.04},{0.34,0.15}};*/
 
-	Line *lines= (Line *) malloc(4*size*sizeof(Line));
+	Line *lines= (Line *) malloc(4 * size * sizeof(Line));
 	int *counts=(int *) malloc((size/3+2)*sizeof(int));
 	int *countsSum=(int *) malloc((size/3+2)*sizeof(int));
 	int *linesSum=(int *) malloc((size/3+2)*sizeof(int));
 	int sizeL=0;
 	int sizeC=0;
-	Point points[data.size()];
-	memcpy(&points, data.data(), sizeof(Point) * data.size());
+
+	Point* points = new Point[size];
+
+	for (int i = 0; i < size; i++)
+	{
+		points[i] = data[i];
+		printf("Point %d: %f, %f\n", i, points[i].x, points[i].y);
+	}
 
 	int *sizeLs= (int *) malloc((size/3+2)*sizeof(int));
 	
 	quickSort(points, size-1,0,0);
-	printf("Point 0: %f, %f", points[0].x, points[0].y);
 	
 	divideIntoTriangles(size, points,lines,&sizeL,counts,&sizeC,sizeLs);
 	if(size>4)
@@ -930,7 +944,7 @@ void mainFunction(void)
 			threads=sizeC/2;
 			if(sizeC%2!=0)
 				threads++;
-			connectTwoTriangulations<<<1,threads>>>(dev_points, dev_counts, sizeC,dev_lines,dev_sizeL,dev_countsSum,dev_sizeLs,dev_linesSum);
+			connectTwoTriangulations<<<1,threads, MAGIC_CONSTANT(size) * sizeof(int)>>>(dev_points, dev_counts, sizeC,dev_lines,dev_sizeL,dev_countsSum,dev_sizeLs,dev_linesSum, size);
 			sizeC=sizeC-sizeC/2;
 		}
 	
